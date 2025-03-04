@@ -1,0 +1,244 @@
+/* Global styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    /* Color scheme - customize these to match your portfolio images */
+    --primary-color: #333;
+    --secondary-color: #666;
+    --accent-color: #444;
+    --background-color: #f8f8f8;
+    --header-color: #222;
+    --divider-color: #444;
+    
+    /* Typography */
+    --header-font: 'Alef', 'Open Sans', sans-serif;
+    --body-font: 'Open Sans', 'Segoe UI', Tahoma, sans-serif;
+}
+
+body {
+    font-family: var(--body-font);
+    line-height: 1.6;
+    background-color: var(--background-color);
+    color: var(--primary-color);
+    direction: rtl;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+/* Enhanced header styles */
+header {
+    text-align: center;
+    margin-bottom: 40px;
+    padding-bottom: 20px;
+    position: relative;
+}
+
+header::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 3px;
+    background-color: var(--divider-color);
+    border-radius: 2px;
+}
+
+header h1 {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+    font-weight: 300;
+    letter-spacing: 1px;
+    color: var(--header-color);
+    font-family: var(--header-font);
+    position: relative;
+    display: inline-block;
+    padding: 0 15px;
+}
+
+/* Header style variants - choose the one that best matches your portfolio by adding the class to the header element */
+
+/* Style 1: Elegant with horizontal lines (default in HTML) */
+.elegant-header h1 {
+    text-transform: uppercase;
+    font-size: 2rem;
+    letter-spacing: 3px;
+}
+
+.elegant-header h1::before,
+.elegant-header h1::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 30px;
+    height: 1px;
+    background-color: var(--divider-color);
+}
+
+.elegant-header h1::before {
+    right: 100%;
+    margin-right: 15px;
+}
+
+.elegant-header h1::after {
+    left: 100%;
+    margin-left: 15px;
+}
+
+/* Style 2: Minimal with bottom border */
+.minimal-header h1 {
+    font-weight: 300;
+    border-bottom: 1px solid var(--divider-color);
+    padding-bottom: 10px;
+}
+
+.minimal-header::after {
+    display: none;
+}
+
+/* Style 3: Bold and artistic */
+.artistic-header h1 {
+    font-weight: 700;
+    letter-spacing: 2px;
+    transform: scale(1, 0.95);
+}
+
+.artistic-header::after {
+    width: 100px;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, var(--divider-color), transparent);
+}
+
+/* Portfolio viewer styles */
+.portfolio-viewer {
+    position: relative;
+    margin-bottom: 30px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Swiper container */
+.swiper {
+    width: 100%;
+    height: 80vh;
+}
+
+.swiper-slide {
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.swiper-slide img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    display: block;
+}
+
+/* Navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+    color: #0066cc;
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 30px 20px;
+    border-radius: 5px;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+    background-color: rgba(255, 255, 255, 0.95);
+}
+
+/* Page indicator */
+.page-indicator {
+    text-align: center;
+    margin: 15px 0;
+    font-size: 1.1rem;
+}
+
+/* Thumbnails styles */
+.thumbnails-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.thumbnail {
+    width: 80px;
+    height: 60px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail.active {
+    border-color: #0066cc;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    padding-top: 20px;
+    border-top: 1px solid #ddd;
+    color: #666;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+    .swiper {
+        height: 60vh;
+    }
+    
+    .swiper-button-next,
+    .swiper-button-prev {
+        padding: 20px 15px;
+    }
+    
+    .thumbnail {
+        width: 60px;
+        height: 45px;
+    }
+}
+
+@media (max-width: 480px) {
+    .swiper {
+        height: 50vh;
+    }
+    
+    header h1 {
+        font-size: 1.5rem;
+    }
+    
+    .swiper-button-next,
+    .swiper-button-prev {
+        padding: 15px 10px;
+    }
+    
+    .thumbnails-container {
+        display: none; /* Hide thumbnails on very small screens */
+    }
+} 
