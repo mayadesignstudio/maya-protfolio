@@ -156,7 +156,7 @@ header h1 {
 
 /* Custom styles for Swiper navigation buttons */
 .swiper-button-next, .swiper-button-prev {
-    background-color: #ff8800; /* צבע כתום */
+    background-color: #16489f; /* צבע כחול מותאם */
     width: 50px; /* גודל החיצים */
     height: 50px; /* גובה החיצים */
     border-radius: 50%; /* עיגול מלא */
@@ -168,7 +168,7 @@ header h1 {
 }
 
 .swiper-button-next:hover, .swiper-button-prev:hover {
-    background-color: #e67a00; /* צבע כתום כהה יותר במעבר עכבר */
+    background-color: #0f3c7e; /* צבע כחול כהה יותר במעבר עכבר */
     transform: scale(1.1); /* הגדלה קלה במעבר עכבר */
 }
 
