@@ -447,50 +447,92 @@ body {
     overflow-x: auto;
     justify-content: flex-start;
     padding: 8px 0;
+    -webkit-overflow-scrolling: touch;
+    scroll-snap-type: x mandatory;
   }
   
-  .thumbnail {
-    width: 55px;
-    height: 55px;
-    margin: 0 4px;
+  .swiper-slide {
+    overflow: hidden;
+    touch-action: none;
+  }
+  
+  .swiper-slide img {
+    max-height: 70vh;
+    object-fit: contain;
+    margin: 0 auto;
+    display: block;
+    touch-action: pinch-zoom;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transform-origin: center center;
+  }
+  
+  .swiper-slide.zoomed {
+    overflow: scroll;
+    touch-action: pan-x pan-y;
+  }
+  
+  .swiper-slide.zoomed img {
+    touch-action: none;
   }
   
   .zoom-icon {
-    display: none; /* הסתרת זכוכית מגדלת במובייל וטאבלט */
+    display: none;
   }
   
   .swiper-pagination {
     bottom: 5px;
   }
-}
-
-/* התאמות לטלפונים גדולים וטאבלטים קטנים */
-@media screen and (max-width: 600px) {
-  .swiper-button-next, .swiper-button-prev {
-    transform: scale(0.7);
-  }
   
-  .thumbnail {
-    width: 48px;
-    height: 48px;
-    margin: 0 3px;
+  /* שיפור נראות כפתורי ניווט במובייל */
+  .swiper-button-next,
+  .swiper-button-prev {
+    background-color: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(5px);
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
   }
 }
 
 /* התאמות לטלפונים חכמים */
 @media screen and (max-width: 480px) {
+  .swiper-container {
+    overflow: hidden;
+    touch-action: pan-y pinch-zoom;
+  }
+  
+  .swiper-slide {
+    overflow: hidden;
+    touch-action: none;
+  }
+  
+  .swiper-slide img {
+    max-height: 65vh;
+    touch-action: pinch-zoom;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    transform-origin: center center;
+  }
+  
+  .swiper-slide.zoomed {
+    overflow: scroll;
+    touch-action: pan-x pan-y;
+  }
+  
+  .swiper-slide.zoomed img {
+    touch-action: none;
+  }
+  
   .zoom-controls {
-    display: none; /* הסתרת כפתורי זום במובייל */
+    display: none;
   }
   
-  .swiper-button-next, .swiper-button-prev {
+  .swiper-button-next,
+  .swiper-button-prev {
     transform: scale(0.6);
-  }
-  
-  .thumbnail {
-    width: 42px;
-    height: 42px;
-    margin: 0 2px;
   }
   
   .page-info {
@@ -523,5 +565,59 @@ body {
   .thumbnail {
     width: 40px;
     height: 40px;
+  }
+}
+
+/* שיפורים לביצועים במובייל */
+@media screen and (max-width: 480px) {
+  .swiper-container {
+    will-change: transform; /* אופטימיזציה לביצועים */
+  }
+  
+  .swiper-slide {
+    backface-visibility: hidden; /* מניעת הבהובים באנימציות */
+    -webkit-backface-visibility: hidden;
+  }
+  
+  .swiper-slide img {
+    max-height: 65vh;
+    transform: translateZ(0); /* אופטימיזציית GPU */
+    -webkit-transform: translateZ(0);
+  }
+  
+  .thumbnail {
+    transform: translateZ(0);
+    -webkit-transform: translateZ(0);
+  }
+}
+
+/* שיפור תמיכה במכשירים עם מסך ברזולוציה גבוהה */
+@media screen and (min-device-pixel-ratio: 2), 
+       screen and (-webkit-min-device-pixel-ratio: 2),
+       screen and (min-resolution: 192dpi) {
+  .swiper-slide img {
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* שיפור נגישות */
+@media (prefers-reduced-motion: reduce) {
+  .swiper-slide,
+  .thumbnail,
+  .zoom-icon,
+  .swiper-button-next,
+  .swiper-button-prev {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* תמיכה ספציפית ב-iOS */
+@supports (-webkit-touch-callout: none) {
+  .swiper-slide img {
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    touch-action: manipulation pinch-zoom;
   }
 } 

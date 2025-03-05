@@ -283,18 +283,108 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 
-// תיקון בעיית תזוזת תמונות במובייל
+// תיקון בעיית תזוזת תמונות במובייל וטאבלטים
 (function() {
-  // בדיקה אם המכשיר הוא מובייל
-  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  // בדיקה אם המכשיר הוא מובייל או טאבלט
+  const isMobileOrTablet = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile/i.test(navigator.userAgent);
   
-  if (isMobile) {
-    // מניעת תזוזה לא רצויה של תמונות בתצוגת מובייל
+  if (isMobileOrTablet) {
     document.addEventListener('DOMContentLoaded', function() {
-      const slideImages = document.querySelectorAll('.swiper-slide img');
-      slideImages.forEach(img => {
-        img.style.pointerEvents = 'none'; // מבטל אינטראקציה ישירה עם התמונה
+      const slides = document.querySelectorAll('.swiper-slide');
+      
+      slides.forEach(function(slide) {
+        const img = slide.querySelector('img');
+        if (!img) return;
+        
+        // מניעת פתיחת המודאל בלחיצה על תמונה במובייל
+        img.addEventListener('click', function(e) {
+          e.preventDefault();
+          e.stopPropagation();
+        }, true);
+        
+        // הגדרת משתנים לזום
+        let currentScale = 1;
+        let startScale = 1;
+        let lastTapTime = 0;
+        
+        // טיפול בתחילת מגע
+        img.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 2) {
+            e.preventDefault();
+            startScale = currentScale;
+          }
+          
+          // טיפול בדאבל טאפ
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTapTime;
+          if (tapLength < 300 && tapLength > 0) {
+            e.preventDefault();
+            currentScale = currentScale === 1 ? 2 : 1;
+            updateZoom();
+          }
+          lastTapTime = currentTime;
+        });
+        
+        // טיפול בתנועת אצבעות
+        img.addEventListener('touchmove', function(e) {
+          if (e.touches.length === 2) {
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            
+            // חישוב המרחק בין האצבעות
+            const distance = Math.hypot(
+              touch2.clientX - touch1.clientX,
+              touch2.clientY - touch1.clientY
+            );
+            
+            // עדכון הסקייל בהתאם למרחק
+            const newScale = Math.min(Math.max(startScale * (distance / initialDistance), 1), 3);
+            if (newScale !== currentScale) {
+              currentScale = newScale;
+              updateZoom();
+            }
+          }
+        });
+        
+        // פונקציה לעדכון הזום
+        function updateZoom() {
+          img.style.transform = `scale(${currentScale})`;
+          slide.classList.toggle('zoomed', currentScale > 1);
+          
+          // עדכון מצב הסליידר
+          const swiper = slide.closest('.swiper-container').swiper;
+          if (swiper) {
+            if (currentScale > 1) {
+              swiper.allowTouchMove = false;
+              swiper.allowSlideNext = false;
+              swiper.allowSlidePrev = false;
+            } else {
+              swiper.allowTouchMove = true;
+              swiper.allowSlideNext = true;
+              swiper.allowSlidePrev = true;
+            }
+          }
+        }
+        
+        // איפוס הזום בסיום המגע
+        img.addEventListener('touchend', function() {
+          if (currentScale < 1.1) {
+            currentScale = 1;
+            updateZoom();
+          }
+        });
       });
+      
+      // הסתרת אייקון הזום במובייל
+      const zoomIcons = document.querySelectorAll('.zoom-icon');
+      zoomIcons.forEach(icon => icon.style.display = 'none');
+      
+      // עדכון ה-viewport למובייל
+      const viewport = document.querySelector('meta[name="viewport"]');
+      if (viewport) {
+        viewport.content = "width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=3.0";
+      }
     });
   }
 })();
@@ -320,75 +410,161 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // התאמות למכשירים ניידים וטאבלטים
   if (isMobileOrTablet()) {
-    // מניעת פתיחת מודאל זום במובייל וטאבלט
-    document.querySelectorAll('.swiper-slide img').forEach(img => {
-      img.addEventListener('click', function(e) {
-        // חסימת האירוע המקורי שפותח את מודאל הזום
-        e.stopPropagation();
-        e.preventDefault();
-      }, true);
-    });
-    
-    // הוספת תמיכה בפעולת זום טבעית במובייל וטאבלט
     document.addEventListener('DOMContentLoaded', function() {
-      // הוספת מטא תג לאפשר פינץ'-זום טבעי
+      // הגדרות בסיסיות למובייל
       const viewport = document.querySelector('meta[name="viewport"]');
       if (viewport) {
         viewport.content = "width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, minimum-scale=1.0";
-      } else {
-        const newViewport = document.createElement('meta');
-        newViewport.name = 'viewport';
-        newViewport.content = "width=device-width, initial-scale=1.0, user-scalable=yes, maximum-scale=5.0, minimum-scale=1.0";
-        document.head.appendChild(newViewport);
       }
       
-      // הגדרות ספציפיות לאייפון וספארי
-      if (isIOS()) {
-        const styleSheetIOS = document.createElement('style');
-        styleSheetIOS.textContent = `
-          .swiper-slide img {
-            -webkit-touch-callout: none;
-            -webkit-user-select: none;
-            touch-action: manipulation;
-          }
-        `;
-        document.head.appendChild(styleSheetIOS);
-      }
-      
-      // הגדרות ספציפיות לאנדרואיד
-      if (isAndroid()) {
-        const styleSheetAndroid = document.createElement('style');
-        styleSheetAndroid.textContent = `
-          .swiper-slide img {
-            touch-action: pan-x pan-y pinch-zoom;
-          }
-        `;
-        document.head.appendChild(styleSheetAndroid);
-      }
-      
-      // הגדרות כלליות למובייל וטאבלט
-      const styleSheet = document.createElement('style');
-      styleSheet.textContent = `
-        .swiper-slide img {
-          touch-action: pinch-zoom;
-          -webkit-overflow-scrolling: touch;
-          user-select: none;
+      // טיפול בתמונות במובייל
+      const slideImages = document.querySelectorAll('.swiper-slide img');
+      slideImages.forEach(img => {
+        let currentScale = 1;
+        let startScale = 1;
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let currentY = 0;
+        let initialDistance = 0;
+        let isZooming = false;
+        
+        // מניעת גרירה של תמונות
+        img.addEventListener('dragstart', (e) => e.preventDefault());
+        
+        // שיפור ביצועי טעינה
+        if ('loading' in HTMLImageElement.prototype) {
+          img.loading = 'lazy';
         }
         
-        .swiper-container {
-          width: 100% !important;
-          height: auto !important;
-          overflow: hidden;
+        // פונקציה להחלת טרנספורם על התמונה
+        function applyTransform() {
+          const limitX = (img.width * currentScale - img.width) / 2;
+          const limitY = (img.height * currentScale - img.height) / 2;
+          
+          // הגבלת הזזה לגבולות התמונה
+          currentX = Math.min(Math.max(currentX, -limitX), limitX);
+          currentY = Math.min(Math.max(currentY, -limitY), limitY);
+          
+          img.style.transform = `translate(${currentX}px, ${currentY}px) scale(${currentScale})`;
         }
-      `;
-      document.head.appendChild(styleSheet);
-      
-      // התאמת גודל התצוגה בעת שינוי כיוון המסך
-      window.addEventListener('orientationchange', function() {
-        setTimeout(function() {
-          window.scrollTo(0, 0);
-        }, 300);
+        
+        // איפוס זום
+        function resetZoom() {
+          currentScale = 1;
+          currentX = 0;
+          currentY = 0;
+          isZooming = false;
+          img.style.transform = 'none';
+          document.body.classList.remove('zooming');
+          img.closest('.swiper-slide').classList.remove('swiper-slide-zoomed');
+        }
+        
+        // טיפול במחוות מגע
+        img.addEventListener('touchstart', function(e) {
+          if (e.touches.length === 2) {
+            e.preventDefault();
+            isZooming = true;
+            startScale = currentScale;
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            initialDistance = Math.hypot(
+              touch2.clientX - touch1.clientX,
+              touch2.clientY - touch1.clientY
+            );
+            document.body.classList.add('zooming');
+            img.closest('.swiper-slide').classList.add('swiper-slide-zoomed');
+          } else if (e.touches.length === 1 && currentScale > 1) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            startX = touch.clientX - currentX;
+            startY = touch.clientY - currentY;
+          }
+        }, { passive: false });
+        
+        img.addEventListener('touchmove', function(e) {
+          if (e.touches.length === 2 && isZooming) {
+            e.preventDefault();
+            const touch1 = e.touches[0];
+            const touch2 = e.touches[1];
+            const currentDistance = Math.hypot(
+              touch2.clientX - touch1.clientX,
+              touch2.clientY - touch1.clientY
+            );
+            
+            currentScale = Math.min(Math.max(startScale * (currentDistance / initialDistance), 1), 4);
+            applyTransform();
+          } else if (e.touches.length === 1 && currentScale > 1) {
+            e.preventDefault();
+            const touch = e.touches[0];
+            currentX = touch.clientX - startX;
+            currentY = touch.clientY - startY;
+            applyTransform();
+          }
+        }, { passive: false });
+        
+        img.addEventListener('touchend', function(e) {
+          if (e.touches.length === 0) {
+            if (currentScale === 1) {
+              resetZoom();
+            }
+            isZooming = false;
+          }
+        });
+        
+        // טיפול בלחיצה כפולה
+        let lastTap = 0;
+        img.addEventListener('touchend', function(e) {
+          const currentTime = new Date().getTime();
+          const tapLength = currentTime - lastTap;
+          if (tapLength < 300 && tapLength > 0) {
+            e.preventDefault();
+            if (currentScale === 1) {
+              currentScale = 2;
+              document.body.classList.add('zooming');
+              img.closest('.swiper-slide').classList.add('swiper-slide-zoomed');
+            } else {
+              resetZoom();
+            }
+            applyTransform();
+          }
+          lastTap = currentTime;
+        });
       });
+      
+      // התאמות ספציפיות למערכות הפעלה
+      if (isIOS()) {
+        document.head.insertAdjacentHTML('beforeend', `
+          <style>
+            .swiper-slide img {
+              -webkit-touch-callout: none;
+              -webkit-user-select: none;
+              touch-action: none;
+            }
+            .swiper-slide-zoomed img {
+              touch-action: pan-x pan-y pinch-zoom;
+            }
+          </style>
+        `);
+      } else if (isAndroid()) {
+        document.head.insertAdjacentHTML('beforeend', `
+          <style>
+            .swiper-slide img {
+              touch-action: none;
+            }
+            .swiper-slide-zoomed img {
+              touch-action: pan-x pan-y pinch-zoom;
+            }
+          </style>
+        `);
+      }
+      
+      // מניעת גלילה בזמן זום
+      document.addEventListener('touchmove', function(e) {
+        if (document.body.classList.contains('zooming')) {
+          e.preventDefault();
+        }
+      }, { passive: false });
     });
   }
 })(); 
