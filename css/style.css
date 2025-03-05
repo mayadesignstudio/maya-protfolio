@@ -157,26 +157,34 @@ body {
 /* סגנון אייקון הזום */
 .zoom-icon {
     position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background-color: rgba(255, 255, 255, 0.8);
+    bottom: 15px;
+    right: 15px;
+    background-color: #2950a3;
     border-radius: 50%;
-    padding: 8px;
+    width: 40px;
+    height: 40px;
     cursor: pointer;
     z-index: 10;
-    transition: background-color 0.3s;
+    transition: all 0.2s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .zoom-icon:hover {
-    background-color: rgba(255, 255, 255, 1);
+    background-color: #3e6ac2;
+    transform: translateY(-2px);
 }
 
 .zoom-icon svg {
-    color: var(--primary-color);
+    color: white;
+    width: 20px;
+    height: 20px;
 }
 
 .swiper-container:hover .zoom-icon {
-    opacity: 0.9;
+    opacity: 1;
 }
 
 /* סגנון מודאל להגדלת תמונה */
@@ -187,7 +195,8 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.9);
+    background-color: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(5px);
     z-index: 1000;
     overflow: hidden;
 }
@@ -215,49 +224,87 @@ body {
     cursor: grab;
     top: 50%;
     left: 50%;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: transform;
 }
 
 #zoom-image:active {
     cursor: grabbing;
 }
 
+/* עיצוב מחדש של כפתורי הזום והאיפוס בסגנון מודרני וכחול */
 .zoom-controls {
-    position: fixed;
-    bottom: 20px;
+    position: absolute;
+    bottom: 25px;
     left: 50%;
     transform: translateX(-50%);
-    background-color: rgba(255, 255, 255, 0.8);
-    padding: 10px;
-    border-radius: 20px;
     display: flex;
-    gap: 10px;
+    gap: 15px;
+    z-index: 10000;
+    padding: 10px 15px;
+    background-color: rgba(255, 255, 255, 0.2);
+    border-radius: 30px;
+    backdrop-filter: blur(5px);
 }
 
 .zoom-controls button {
-    background-color: white;
-    border: 1px solid #ccc;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    background-color: #2950a3;
+    border: none;
     border-radius: 50%;
-    width: 30px;
-    height: 30px;
     cursor: pointer;
-    font-size: 16px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    transition: all 0.2s ease;
     display: flex;
-    align-items: center;
     justify-content: center;
+    align-items: center;
 }
 
 .zoom-controls button:hover {
-    background-color: #f0f0f0;
+    background-color: #3e6ac2;
+    transform: translateY(-2px);
+}
+
+.zoom-controls .zoom-reset {
+    width: 70px !important;
+    border-radius: 20px !important;
+    font-size: 14px !important;
+    font-weight: normal !important;
 }
 
 .zoom-close {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
     color: white;
-    font-size: 30px;
+    background-color: #2950a3;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     cursor: pointer;
-    z-index: 1001;
+    transition: all 0.2s ease;
+    z-index: 10000;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+.zoom-close:hover {
+    background-color: #3e6ac2;
+    transform: translateY(-2px);
+}
+
+.zoom-close svg {
+    width: 20px;
+    height: 20px;
+    stroke: white;
+    stroke-width: 2.5;
 }
 
 /* התאמה למובייל */
@@ -286,12 +333,43 @@ body {
     }
     
     .zoom-controls {
+        padding: 8px 12px;
         gap: 10px;
     }
     
     .zoom-controls button {
-        padding: 6px 12px;
-        font-size: 14px;
+        width: 36px;
+        height: 36px;
+        font-size: 16px;
+    }
+    
+    .zoom-controls .zoom-reset {
+        width: 60px !important;
+        font-size: 12px !important;
+    }
+    
+    .zoom-icon {
+        width: 36px;
+        height: 36px;
+        bottom: 12px;
+        right: 12px;
+    }
+    
+    .zoom-icon svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    .zoom-close {
+        width: 36px;
+        height: 36px;
+        top: 15px;
+        right: 15px;
+    }
+    
+    .zoom-close svg {
+        width: 18px;
+        height: 18px;
     }
 }
 
