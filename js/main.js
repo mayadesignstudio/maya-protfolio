@@ -281,4 +281,20 @@ document.addEventListener('DOMContentLoaded', function() {
             this.style.transform = 'scale(1)';
         });
     });
-}); 
+});
+
+// תיקון בעיית תזוזת תמונות במובייל
+(function() {
+  // בדיקה אם המכשיר הוא מובייל
+  const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+  
+  if (isMobile) {
+    // מניעת תזוזה לא רצויה של תמונות בתצוגת מובייל
+    document.addEventListener('DOMContentLoaded', function() {
+      const slideImages = document.querySelectorAll('.swiper-slide img');
+      slideImages.forEach(img => {
+        img.style.pointerEvents = 'none'; // מבטל אינטראקציה ישירה עם התמונה
+      });
+    });
+  }
+})(); 
