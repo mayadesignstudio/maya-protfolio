@@ -59,45 +59,83 @@
     
     // ===== טיפול באירועי עכבר (למחשב) =====
     
-    // זום עם גלגלת העכבר
-    zoomImage.addEventListener('wheel', function(e) {
-        e.preventDefault();
+    // בדיקה אם המכשיר הוא נייד
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    
+    if (!isMobile) {
+        // מחיקת אירועי גלגלת קודמים
+        const oldListeners = zoomImage.getEventListeners?.('wheel') || [];
+        oldListeners.forEach(listener => {
+            zoomImage.removeEventListener('wheel', listener.listener);
+        });
         
-        if (e.shiftKey || e.ctrlKey) {
-            // זום רגיל עם shift או ctrl
-            if (e.deltaY < 0) {
-                // זום פנימה
-                scale = Math.min(5, scale + 0.2);
-            } else {
-                // זום החוצה
-                scale = Math.max(1, scale - 0.2);
-            }
+        // התנהגות חדשה לגלגלת העכבר
+        zoomImage.addEventListener('wheel', function(e) {
+            e.preventDefault();
             
-            // שמירה על מרכוז בעת שינוי הזום
-            if (scale === 1) {
-                posX = 0;
-                posY = 0;
-            }
-        } else if (scale > 1) {
-            // חישוב מרווח תנועה מקסימלי
-            const maxOffsetX = (scale - 1) * zoomImage.width * 0.2;  // 20% מרווח תנועה לצדדים
-            const maxOffsetY = (scale - 1) * zoomImage.height * 0.3; // 30% מרווח תנועה למעלה ולמטה
-            
-            if (e.deltaY !== 0) {
-                if (e.shiftKey) {
-                    // תנועה אופקית עם shift
-                    posX += e.deltaY > 0 ? -10 : 10;
-                    posX = Math.min(Math.max(-maxOffsetX, posX), maxOffsetX);
+            // אם נלחץ Shift - עדיין מאפשר זום
+            if (e.shiftKey) {
+                if (e.deltaY < 0) {
+                    scale += 0.2;
+                    if (scale > 5) scale = 5;
                 } else {
-                    // תנועה אנכית
-                    posY += e.deltaY > 0 ? -10 : 10;
-                    posY = Math.min(Math.max(-maxOffsetY, posY), maxOffsetY);
+                    scale -= 0.2;
+                    if (scale < 1) scale = 1;
+                    if (scale === 1) {
+                        posX = 0;
+                        posY = 0;
+                    }
+                }
+            } 
+            // אחרת, אם כבר בזום - מאפשר גלילה למעלה/למטה
+            else if (scale > 1) {
+                const scrollSpeed = 30 / scale; // מהירות גלילה מותאמת לזום
+                posY += e.deltaY < 0 ? scrollSpeed : -scrollSpeed;
+                
+                // הגבלת הגלילה למסגרת התמונה
+                const maxOffset = (scale - 1) * Math.min(zoomImage.width, zoomImage.height) / 2;
+                posY = Math.min(Math.max(-maxOffset, posY), maxOffset);
+            }
+            // אם לא בזום ולא נלחץ Shift - עדיין מאפשר זום רגיל
+            else {
+                if (e.deltaY < 0) {
+                    scale += 0.2;
+                } else {
+                    scale = 1;
                 }
             }
-        }
+            
+            updateTransform();
+        }, { passive: false });
         
-        updateTransform();
-    }, { passive: false });
+        // הוספת טיפ שימוש
+        const zoomModalContent = document.querySelector('.zoom-modal-content');
+        const zoomTip = document.createElement('div');
+        zoomTip.className = 'zoom-scroll-tip';
+        zoomTip.innerText = 'גלגל עכבר: לגלילה | SHIFT+גלגל: לזום';
+        zoomTip.style.position = 'absolute';
+        zoomTip.style.bottom = '80px';
+        zoomTip.style.left = '50%';
+        zoomTip.style.transform = 'translateX(-50%)';
+        zoomTip.style.background = 'rgba(0,0,0,0.6)';
+        zoomTip.style.color = 'white';
+        zoomTip.style.padding = '8px 15px';
+        zoomTip.style.borderRadius = '20px';
+        zoomTip.style.fontSize = '14px';
+        zoomTip.style.opacity = '0';
+        zoomTip.style.transition = 'opacity 0.5s';
+        zoomModalContent.appendChild(zoomTip);
+        
+        // הצגת הטיפ למספר שניות בפתיחת המודאל
+        zoomModal.addEventListener('click', function(e) {
+            if (e.target === this || e.target.className === 'zoom-modal-content') {
+                zoomTip.style.opacity = '1';
+                setTimeout(() => {
+                    zoomTip.style.opacity = '0';
+                }, 3000);
+            }
+        });
+    }
     
     // התחלת גרירה
     zoomImage.addEventListener('mousedown', function(e) {
@@ -247,158 +285,4 @@
         openModal: openModal,
         closeModal: closeModal
     };
-    
-    // זיהוי אם מדובר במחשב או מכשיר נייד
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
-    // אם זה מחשב, נוסיף את הפונקציונליות המשופרת
-    if (!isMobile) {
-        const zoomImage = document.getElementById('zoom-image');
-        const zoomModal = document.querySelector('.zoom-modal');
-        
-        // משתנים לשליטה בזום ובתנועה
-        let currentScale = 1;
-        let posX = 0;
-        let posY = 0;
-        let isDragging = false;
-        let startX, startY;
-        
-        // פונקציה לעדכון התמונה בצורה חלקה
-        function updatePosition() {
-            // הגבלת טווח התנועה לפי רמת הזום
-            const maxOffset = (currentScale - 1) * Math.min(zoomImage.width, zoomImage.height) / 2;
-            
-            // הגבלת התנועה כך שהתמונה תישאר תמיד במסגרת התצוגה
-            posX = Math.min(Math.max(-maxOffset, posX), maxOffset);
-            posY = Math.min(Math.max(-maxOffset, posY), maxOffset);
-            
-            // עדכון בצורה חלקה עם אנימציה
-            zoomImage.style.transition = "transform 0.1s ease-out";
-            zoomImage.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${currentScale})`;
-        }
-        
-        // גלילה חכמה עם גלגלת העכבר
-        zoomImage.addEventListener('wheel', function(e) {
-            e.preventDefault();
-            
-            // גלילה עם מקש Shift לצורך זום
-            if (e.shiftKey) {
-                // זום אין או אאוט
-                if (e.deltaY < 0) {
-                    currentScale += 0.2;
-                    if (currentScale > 5) currentScale = 5;
-                } else {
-                    currentScale -= 0.2;
-                    if (currentScale < 1) currentScale = 1;
-                    
-                    // איפוס פוזיציה בחזרה לזום רגיל
-                    if (currentScale === 1) {
-                        posX = 0;
-                        posY = 0;
-                    }
-                }
-            } else if (currentScale > 1) {
-                // גלילה רגילה לתנועה בתוך התמונה המוגדלת
-                const moveStep = 30 / currentScale; // התאמת מהירות התנועה לרמת הזום
-                
-                if (e.deltaY > 0) {
-                    // גלילה למטה
-                    posY -= moveStep;
-                } else {
-                    // גלילה למעלה
-                    posY += moveStep;
-                }
-                
-                // תנועה אופקית עם מקש Alt
-                if (e.altKey) {
-                    if (e.deltaY > 0) {
-                        posX -= moveStep;
-                    } else {
-                        posX += moveStep;
-                    }
-                }
-            }
-            
-            updatePosition();
-        });
-        
-        // תמיכה בגרירה עם העכבר
-        zoomImage.addEventListener('mousedown', function(e) {
-            if (currentScale > 1) {
-                isDragging = true;
-                startX = e.clientX - posX;
-                startY = e.clientY - posY;
-                zoomImage.style.transition = "none"; // ביטול אנימציה בזמן גרירה
-                e.preventDefault();
-            }
-        });
-        
-        document.addEventListener('mousemove', function(e) {
-            if (isDragging) {
-                posX = e.clientX - startX;
-                posY = e.clientY - startY;
-                zoomImage.style.transition = "none";
-                zoomImage.style.transform = `translate(calc(-50% + ${posX}px), calc(-50% + ${posY}px)) scale(${currentScale})`;
-            }
-        });
-        
-        document.addEventListener('mouseup', function() {
-            if (isDragging) {
-                isDragging = false;
-                updatePosition(); // עדכון סופי עם הגבלות
-            }
-        });
-        
-        // הוספת טיפ קטן למשתמש בפתיחת המודאל
-        const zoomTip = document.createElement('div');
-        zoomTip.className = 'zoom-tip';
-        zoomTip.innerHTML = 'גלגלת: לגלול | Shift+גלגלת: זום | גרירה: הזזה';
-        zoomTip.style.position = 'absolute';
-        zoomTip.style.bottom = '70px';
-        zoomTip.style.left = '50%';
-        zoomTip.style.transform = 'translateX(-50%)';
-        zoomTip.style.backgroundColor = 'rgba(0,0,0,0.6)';
-        zoomTip.style.color = 'white';
-        zoomTip.style.padding = '8px 15px';
-        zoomTip.style.borderRadius = '20px';
-        zoomTip.style.fontSize = '14px';
-        zoomTip.style.opacity = '0';
-        zoomTip.style.transition = 'opacity 0.3s';
-        zoomModal.appendChild(zoomTip);
-        
-        // הצגת הטיפ בפתיחת המודאל
-        document.querySelector('.zoom-close').addEventListener('click', function() {
-            setTimeout(() => {
-                zoomTip.style.opacity = '0';
-            }, 100);
-            currentScale = 1;
-            posX = 0;
-            posY = 0;
-        });
-        
-        // עדכון פונקציית הצגת המודאל
-        const openZoomModal = (imageSrc) => {
-            zoomImage.src = imageSrc;
-            zoomModal.style.display = 'block';
-            currentScale = 1;
-            posX = 0;
-            posY = 0;
-            updatePosition();
-            
-            // הצגת הטיפ לזמן קצר
-            setTimeout(() => {
-                zoomTip.style.opacity = '1';
-                setTimeout(() => {
-                    zoomTip.style.opacity = '0';
-                }, 3000);
-            }, 500);
-        };
-        
-        // עדכון פתיחת המודאל בכל התמונות
-        document.querySelectorAll('.swiper-slide img').forEach(img => {
-            img.addEventListener('click', function() {
-                openZoomModal(this.src);
-            });
-        });
-    }
 })(); 
